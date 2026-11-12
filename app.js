@@ -59,7 +59,8 @@ function renderRoute(panel, chapter, progress) {
   const current = add(panel, "div", "", "task-now");
   add(current, "p", `目前要做 · 第 ${progress.step + 1} / ${meter.max} 步`, "muted");
   add(current, "h3", `${step.area}｜${step.task}`);
-  add(current, "p", nextStep ? `下一站：${nextStep.area}` : "這是本章最後一個示範步驟。", "muted");
+  add(current, "p", step.detail);
+  add(current, "p", nextStep ? `下一站：${nextStep.area}` : "這是本章最後一步。", "muted");
 
   const mark = add(current, "label", "", "step");
   const currentCheckbox = document.createElement("input");
@@ -116,19 +117,24 @@ function render() {
   const panel = $("panel");
   panel.replaceChildren();
   const chapter = chapters[state.act - 1];
-  const progress = state.progress[state.act] ??= { step: 0, done: [] };
+  // 正式路線使用新進度鍵，避免將舊示範勾選套到遊戲任務。
+  const progress = state.progress[chapter.progressKey || state.act] ??= { step: 0, done: [] };
   const pob = state.build === "pob" ? state.imported : null;
   const headings = { route: `第 ${state.act} 章拓荒`, gems: "技能寶石", tree: "天賦配置", map: `第 ${state.act} 章地圖路線` };
   add(panel, "h2", headings[view]);
 
-  if (view === "route" || view === "map" || !pob) add(panel, "p", demoNotice, "notice");
-  else add(panel, "p", `來源：匯入的 PoB｜目標版本：${pob.target || "未提供"}｜原始職業：${classes[pob.className] || pob.className || "未提供"}`, "notice");
+  if ((view === "route" || view === "map") && chapter.source) {
+    const source = add(panel, "p", "POE1 繁中路線 v1｜來源查核 2026-11-12｜", "muted");
+    add(source, "a", "流亡編年史", "source-link").href = chapter.source;
+  } else if (view === "route" || view === "map" || !pob) {
+    add(panel, "p", demoNotice, "notice");
+  } else add(panel, "p", `來源：匯入的 PoB｜目標版本：${pob.target || "未提供"}｜原始職業：${classes[pob.className] || pob.className || "未提供"}`, "notice");
 
   if (view === "route") {
     renderRoute(panel, chapter, progress);
   } else if (view === "map") {
     const next = chapter.steps[progress.step + 1];
-    add(panel, "p", next ? `下一站：${next.area}` : "已到達本章最後一個示範步驟。");
+    add(panel, "p", next ? `下一站：${next.area}` : "已到達本章最後一步。");
     const list = add(panel, "ol", "");
     chapter.steps.forEach((step, index) => {
       const item = add(list, "li", `${step.area}｜${step.task}`, index === progress.step ? "card current" : "card");
@@ -142,7 +148,7 @@ function render() {
     add(panel, "p", `插槽需求：${stage.sockets}。取得章節與購買條件未提供。`);
     if (next) add(panel, "p", `等級 ${next.level} 切換至${next.title}。`);
   } else if (view === "gems") {
-    add(panel, "p", "以下是 PoB 原始技能群組。缺少逐級推薦、取得條件與實際插槽需求。");
+    add(panel, "p", "以下是 PoB 原始技能群組。若原檔使用英文，目前會顯示原名。逐級推薦、取得條件與實際插槽需求未提供。");
     if (!pob.groups.length) add(panel, "p", "未讀到可顯示的寶石名稱。");
     pob.groups.forEach((group, index) => {
       const card = add(panel, "div", "", "card");
