@@ -13,18 +13,27 @@
 <body>
 <header><div class="wrap mast"><div class="brand">Exile<span>Pilot</span><small>PATH OF EXILE 1</small></div><button id="open-import">匯入 PoB</button></div></header>
 <main class="wrap">
-<section class="hero"><h1>拓荒助手</h1><p>查看當前路線、技能寶石與天賦配置。</p></section>
+<section class="hero">
+<h1>拓荒助手</h1>
+<p>選擇你所在的章節，照著「目前要做」的步驟前進。</p>
+<div class="start">
+<label for="act">目前章節</label>
+<select id="act"></select>
+</div>
+</section>
+<details class="settings">
+<summary>角色與流派設定 <span id="character-summary"></span></summary>
 <section class="controls" aria-label="角色設定">
-<label>目前章節<select id="act"></select></label>
 <label>角色等級<input id="level" type="number" min="1" max="100" value="1" required></label>
 <label>職業<select id="class"></select></label>
 <label>流派<select id="build"></select></label>
 </section>
+</details>
 <nav aria-label="主要導覽" id="nav">
 <button data-view="route" aria-pressed="true">拓荒</button><button data-view="gems" aria-pressed="false">技能</button><button data-view="tree" aria-pressed="false">天賦</button><button data-view="map" aria-pressed="false">地圖</button>
 </nav>
-<p id="save" class="muted" role="status"></p>
 <section id="panel" class="panel" aria-label="目前頁面"></section>
+<p id="save" class="muted" role="status"></p>
 </main>
 <dialog id="import-dialog" aria-labelledby="import-title">
 <form id="import-form">

@@ -39,6 +39,13 @@ function syncControls() {
   options($("class"), [["", "未選擇"], ...Object.entries(classes)], state.className);
   options($("build"), [["demo", demoBuild.name], ...(state.imported ? [["pob", "匯入的 PoB 流派"]] : [])], state.build);
   $("level").value = state.level;
+  syncCharacterSummary();
+}
+
+function syncCharacterSummary() {
+  const buildName = state.build === "pob" ? "PoB 流派" : "內建示範";
+  const className = classes[state.className] || "未選職業";
+  $("character-summary").textContent = `等級 ${state.level} · ${className} · ${buildName}`;
 }
 
 function renderRoute(panel, chapter, progress) {
@@ -47,27 +54,49 @@ function renderRoute(panel, chapter, progress) {
   meter.max = chapter.steps.length;
   meter.value = count;
   meter.setAttribute("aria-label", "本章完成進度");
+  const step = chapter.steps[progress.step];
+  const nextStep = chapter.steps[progress.step + 1];
+  const current = add(panel, "div", "", "task-now");
+  add(current, "p", `目前要做 · 第 ${progress.step + 1} / ${meter.max} 步`, "muted");
+  add(current, "h3", `${step.area}｜${step.task}`);
+  add(current, "p", nextStep ? `下一站：${nextStep.area}` : "這是本章最後一個示範步驟。", "muted");
+
+  const mark = add(current, "label", "", "step");
+  const currentCheckbox = document.createElement("input");
+  currentCheckbox.type = "checkbox";
+  currentCheckbox.checked = Boolean(progress.done[progress.step]);
+  mark.append(currentCheckbox);
+  add(mark, "strong", "標記這一步已完成");
+
+  const actions = add(current, "div", "", "actions");
   const summary = add(panel, "p", `完成 ${count} / ${meter.max} 項`);
   panel.append(meter);
+  const checklist = add(panel, "details", "", "task-list");
+  add(checklist, "summary", "查看本章所有步驟");
+  const checkboxes = [];
+  const updateCompletion = (index, checked) => {
+    progress.done[index] = checked;
+    checkboxes[index].checked = checked;
+    if (index === progress.step) currentCheckbox.checked = checked;
+    meter.value = progress.done.filter(Boolean).length;
+    summary.textContent = `完成 ${meter.value} / ${meter.max} 項`;
+    save();
+  };
+  currentCheckbox.addEventListener("change", () => updateCompletion(progress.step, currentCheckbox.checked));
   chapter.steps.forEach((step, index) => {
     const active = index === progress.step;
-    const row = add(panel, "label", "", active ? "step current" : "step");
+    const row = add(checklist, "label", "", active ? "step current" : "step");
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.checked = Boolean(progress.done[index]);
-    checkbox.addEventListener("change", () => {
-      progress.done[index] = checkbox.checked;
-      meter.value = progress.done.filter(Boolean).length;
-      summary.textContent = `完成 ${meter.value} / ${meter.max} 項`;
-      save();
-    });
+    checkboxes.push(checkbox);
+    checkbox.addEventListener("change", () => updateCompletion(index, checkbox.checked));
     row.append(checkbox);
     const copy = add(row, "span", "");
     add(copy, "strong", `${active ? "目前步驟 · " : ""}${step.area}｜${step.task}`);
     add(copy, "span", step.detail, "muted");
   });
 
-  const actions = add(panel, "div", "", "actions");
   for (const direction of [-1, 1]) {
     const next = progress.step + direction;
     const button = add(actions, "button", direction < 0 ? "上一步" : "下一步", direction > 0 ? "primary" : "");
@@ -135,11 +164,12 @@ $("act").addEventListener("change", event => { state.act = Number(event.target.v
 $("level").addEventListener("change", event => {
   if (event.target.validity.valid) state.level = event.target.valueAsNumber;
   event.target.value = state.level;
+  syncCharacterSummary();
   save();
   render();
 });
-$("class").addEventListener("change", event => { state.className = event.target.value; save(); });
-$("build").addEventListener("change", event => { state.build = event.target.value; save(); render(); });
+$("class").addEventListener("change", event => { state.className = event.target.value; syncCharacterSummary(); save(); });
+$("build").addEventListener("change", event => { state.build = event.target.value; syncCharacterSummary(); save(); render(); });
 $("nav").querySelectorAll("button").forEach(button => button.addEventListener("click", () => {
   view = button.dataset.view;
   $("nav").querySelectorAll("button").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
