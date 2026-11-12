@@ -45,7 +45,11 @@ async function readPob(input) {
   const attr = (node, key) => (node.getAttribute(key) || "").slice(0, 180);
   const groups = Array.from(root.querySelectorAll(":scope > Skills > Skill, :scope > Skills > SkillSet > Skill"), node => ({
     title: attr(node, "label") || attr(node.parentElement, "title"),
-    gems: Array.from(node.querySelectorAll(":scope > Gem"), gem => attr(gem, "nameSpec") || attr(gem, "gemId")).filter(Boolean),
+    gems: Array.from(node.querySelectorAll(":scope > Gem"), gem => ({
+      name: attr(gem, "nameSpec"),
+      id: attr(gem, "gemId"),
+      variant: attr(gem, "skillId"),
+    })).filter(gem => gem.name || gem.id || gem.variant),
   })).filter(group => group.gems.length);
   const specs = Array.from(root.querySelectorAll(":scope > Tree > Spec"), node => ({
     title: attr(node, "title"),

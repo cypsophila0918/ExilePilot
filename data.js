@@ -24,15 +24,13 @@ const actOne = {
     {"area":"南部森林","task":"進入第二章","detail":"穿過南部森林，抵達森林營地。"},
   ],
 };
-// 其他章節的內容僅用於示範。
-const chapters = Array.from({ length: 10 }, (_, index) => index === 0 ? actOne : ({
-  id: index + 1,
-  steps: [
-    { area: "示範區域 A", task: "確認出發方向", detail: "示範起點" },
-    { area: "示範區域 B", task: "啟用傳送點", detail: "傳送點提醒示範" },
-    { area: "示範區域 C", task: "檢查支線獎勵", detail: "天賦點獎勵提醒示範" },
-  ],
-}));
+// 各章用獨立版本鍵，保留第一章原有進度並隔離舊示範紀錄。
+const chapters = [actOne, ...Object.entries(campaignRoutes).map(([chapter, rows]) => ({
+  id: Number(chapter),
+  progressKey: `act${chapter}-zh-hant-v1`,
+  source: `https://poedb.tw/tw/Act_${chapter}`,
+  steps: rows.map(([area, task, detail]) => ({ area, task, detail })),
+}))];
 const demoBuild = {
   name: "內建流派（操作示範）",
   stages: [
@@ -50,18 +48,50 @@ const gemTranslations = new Map([
   ["Frostblink", "SkillGemFrostblink", "霜漣之瞬"],
   ["Added Lightning Damage Support", "SupportGemAddedLightningDamage", "附加閃電傷害輔助"],
   ["Arc", "SkillGemArc", "電弧"],
-].flatMap(([english, id, chinese]) => [[english, chinese], [id, chinese]]));
+  ["Firestorm", "SkillGemFirestorm", "烈炎風暴"],
+  ["Vaal Firestorm", "SkillGemVaalFirestorm", "瓦爾．烈炎風暴"],
+  ["Firestorm of Meteors", "SkillGemFirestormAltX", "烈炎風暴．隕石"],
+  ["Firestorm of Pelting", "SkillGemFirestormAltY", "烈炎風暴．猛擲"],
+  ["Controlled Destruction Support", "SupportGemControlledDestruction", "精準破壞輔助"],
+  ["Faster Casting Support", "SupportGemFasterCast", "快速施放輔助"],
+  ["Flammability", "SkillGemFlammability", "易燃"],
+  ["Fire Penetration Support", "SupportGemFirePenetration", "火焰穿透輔助"],
+  ["Armageddon Brand", "SkillGemArmageddonBrand", "末日烙印"],
+  ["Flame Dash", "SkillGemFlameDash", "烈焰衝刺"],
+].flatMap(([english, id, chinese]) => [[english, chinese], ...(id ? [[id, chinese]] : [])]));
 
-function displayGem(name) {
-  const original = name.trim();
-  const translated = gemTranslations.get(original.replace(/^Metadata\/Items\/Gems\//, ""));
-  if (translated) return translated;
-  return /\p{Script=Han}/u.test(original) ? original : `原文：${original}`;
+const skillIdTranslations = new Map([
+  ["FlameDash", "烈焰衝刺"],
+  ["SupportArcaneSurge", "秘能波動輔助"],
+  ["SupportControlledDestruction", "精準破壞輔助"],
+  ["SupportAddedLightningDamage", "附加閃電傷害輔助"],
+  ["SupportFasterCasting", "快速施放輔助"],
+  ["SupportFirePenetration", "火焰穿透輔助"],
+  ["FirestormAltX", "烈炎風暴．隕石"],
+  ["FirestormAltY", "烈炎風暴．猛擲"],
+]);
+
+function displayGem(gem) {
+  // 舊版 localStorage 只存字串。原檔有變體名稱時優先辨識，避免共用物品 ID 覆蓋。
+  const { name, id, variant } = typeof gem === "string" ? { name: gem } : gem;
+  const original = name || variant || id;
+  if (/\p{Script=Han}/u.test(original)) return original;
+  const normalizedId = id?.replace(/^Metadata\/Items\/Gems\//, "");
+  const exactName = gemTranslations.get(name);
+  const variantTranslation = skillIdTranslations.get(variant);
+  if (variantTranslation) return variantTranslation;
+  if (variant && /Alt[A-Z]|Royale/i.test(variant)) {
+    const distinctId = /Alt[A-Z]|Royale/i.test(normalizedId || "") ? gemTranslations.get(normalizedId) : null;
+    return distinctId || (/ of |^Royale /i.test(name) ? exactName : null) || `原文：${variant === original ? original : name ? `${name}（${variant}）` : variant}`;
+  }
+  // 共用基本寶石 ID 的變體即使沒有 skillId，也保留原名。
+  if (name && /^(Vaal |Awakened |Royale )| of /i.test(name) && !exactName && !/Vaal|Plus|Alt[A-Z]|Royale/i.test(normalizedId || "")) return `原文：${original}`;
+  return gemTranslations.get(normalizedId) || exactName || gemTranslations.get(original.replace(/^Metadata\/Items\/Gems\//, "")) || `原文：${original}`;
 }
 
 // 女巫第一章入門建議。取得順序取決於任務，角色等級只決定能否裝上寶石。
 const witchStarter = {
-  name: "女巫第一章入門",
+  name: "女巫｜烈炎風暴拓荒",
   steps: [
     { task: "大門口的敵人", title: "絕望岩灘｜火球＋秘能波動輔助", text: "先拿火球打怪，再從途中箱子拿秘能波動輔助。放進同一件裝備的兩個相連藍孔。沒有連線時，先單用火球。" },
     { task: "領取起始技能寶石", title: "大門口的敵人｜選冰霜脈衝", text: "擊敗西拉克後找塔格拉選冰霜脈衝，換下火球，繼續連秘能波動輔助（藍—藍）。投射物可以穿過多個敵人。選過其他獎勵也可找奈莎購買。" },
@@ -77,4 +107,20 @@ const witchStarter = {
     ["霜漣之瞬", "https://poedb.tw/tw/Frostblink"],
     ["附加閃電傷害輔助", "https://poedb.tw/tw/Added_Lightning_Damage_Support"],
   ],
+};
+
+const witchCampaign = {
+  2: [{task:"清理蜘蛛", title:"選精準破壞輔助", text:"向斯克領取，或向伊娜購買。18 級、33 智慧後用冰霜脈衝＋精準破壞輔助＋附加閃電傷害輔助（藍藍藍）。只有兩連就先接精準破壞。可向伊娜買快速施放輔助（藍，18 級、33 智慧），留到主技能換成烈炎風暴後使用。"}],
+  3: [
+    {task:"迷失的愛情", title:"選易燃", text:"向卡爾麗莎領取或購買。24 級、25 力量、37 智慧後可裝一個藍孔，換火系主技能後對頭目手動施放。"},
+    {task:"剷除左右手", title:"選烈炎風暴，28 級換主技能", text:"回薩恩營地找馬拉莫領取。28 級、67 智慧時，把冰霜脈衝換成烈炎風暴。三連用烈炎風暴＋精準破壞輔助＋快速施放輔助（藍藍藍）。未領到可向卡爾麗莎購買，或完成命運之語向薩歐賽買。"},
+    {task:"命運之語", title:"選火焰穿透輔助", text:"女巫可領取，或向卡爾麗莎購買。31 級、52 力量後放進第四個相連紅孔。還沒有藍藍藍紅四連，就繼續用三連。"},
+  ],
+  4: [{title:"完成烈炎風暴四連", text:"把火焰穿透輔助放入第四個相連紅孔。若漏拿，回第三章找卡爾麗莎或薩歐賽。力量不足先留三連，用裝備補力量。"}],
+  5: [{title:"沿用四連，準備抗性裝", text:"維持烈炎風暴＋精準破壞＋快速施放＋火焰穿透（藍藍藍紅）。章末奇塔弗會扣抗性，先保留帶生命與元素抗性的裝備。"}],
+  6: [{task:"畢斯特之詩", title:"解鎖莉莉羅斯的寶石商店", text:"清完絕望岩灘後向莉莉羅斯補買普通寶石。缺烈炎風暴或其輔助可在這裡補齊，再裝回藍藍藍紅四連。"}],
+  7: [{title:"沿用四連與位移", text:"烈炎風暴負責傷害，霜漣之瞬放獨立藍孔。遇到頭目可先施放易燃，再在頭目停住時施放烈炎風暴。"}],
+  8: [{title:"沿用四連，保留走位空間", text:"對雙女神先施放易燃，放烈炎風暴後移動。換裝時確認主技能仍有藍藍藍紅四個相連插槽。"}],
+  9: [{title:"沿用四連，整理抗性與生命", text:"維持主技能四連。難以承受傷害時優先換生命或抗性裝備，留意新裝備的插槽連線。"}],
+  10: [{title:"用同一套連線完成劇情", text:"沿用烈炎風暴四連、易燃與霜漣之瞬。可先完成第三階段迷宮，再挑戰奇塔弗。通關後再檢查抗性。"}],
 };

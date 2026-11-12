@@ -60,14 +60,15 @@ function renderRoute(panel, chapter, progress) {
   add(current, "p", `目前要做 · 第 ${progress.step + 1} / ${meter.max} 步`, "muted");
   add(current, "h3", `${step.area}｜${step.task}`);
   add(current, "p", step.detail);
-  if (chapter.id === 1 && state.build === "witch") {
-    const tip = witchStarter.steps.find(item => item.task === step.task);
+  if (state.build === "witch") {
+    const tips = chapter.id === 1 ? witchStarter.steps : witchCampaign[chapter.id];
+    const tip = tips.find(item => item.task === step.task);
     if (tip) {
       add(current, "h3", tip.title);
       add(current, "p", tip.text);
     }
   }
-  add(current, "p", nextStep ? `下一站：${nextStep.area}` : "這是本章最後一步。", "muted");
+  add(current, "p", nextStep ? `下一步前往：${nextStep.area}` : "這是本章最後一步。", "muted");
 
   const mark = add(current, "label", "", "step");
   const currentCheckbox = document.createElement("input");
@@ -81,6 +82,15 @@ function renderRoute(panel, chapter, progress) {
   panel.append(meter);
   const checklist = add(panel, "details", "", "task-list");
   add(checklist, "summary", "查看本章所有步驟");
+  const jumpLabel = add(checklist, "label", "已在遊戲途中？跳到所在步驟");
+  const jump = add(jumpLabel, "select", "");
+  options(jump, chapter.steps.map(({ area, task }, index) => [index, `${index + 1}. ${area}｜${task}`]), progress.step);
+  jump.addEventListener("change", () => {
+    progress.step = Number(jump.value);
+    save();
+    render();
+    panel.querySelector(".task-now h3").scrollIntoView({ block: "nearest" });
+  });
   const checkboxes = [];
   const updateCompletion = (index, checked) => {
     progress.done[index] = checked;
@@ -118,6 +128,16 @@ function renderRoute(panel, chapter, progress) {
       (preferred.disabled ? buttons[direction < 0 ? 1 : 0] : preferred).focus();
     });
   }
+  if (!nextStep && chapter.id < chapters.length) {
+    const nextChapter = add(panel, "button", `前往第 ${chapter.id + 1} 章`);
+    nextChapter.addEventListener("click", () => {
+      state.act += 1;
+      syncControls();
+      save();
+      render();
+      $("act").focus();
+    });
+  }
 }
 
 function render() {
@@ -131,10 +151,10 @@ function render() {
   add(panel, "h2", headings[view]);
 
   if ((view === "route" || view === "map") && chapter.source) {
-    const source = add(panel, "p", "POE1 繁中路線 v1｜來源查核 2026-11-12｜", "muted");
+    const source = add(panel, "p", "POE1 繁中路線 v1｜3.29 資料基準，對照 3.30 公告｜", "muted");
     add(source, "a", "流亡編年史", "source-link").href = chapter.source;
   } else if ((view === "gems" || view === "tree") && state.build === "witch") {
-    add(panel, "p", "女巫第一章入門 v1｜POE1 繁中資料查核 2026-11-13", "notice");
+    add(panel, "p", "烈炎風暴女巫 v1｜3.29 資料基準", "notice");
   } else if (view === "route" || view === "map" || !pob) {
     add(panel, "p", demoNotice, "notice");
   } else add(panel, "p", `來源：匯入的 PoB｜目標版本：${pob.target || "未提供"}｜原始職業：${classes[pob.className] || pob.className || "未提供"}`, "notice");
@@ -143,7 +163,7 @@ function render() {
     renderRoute(panel, chapter, progress);
   } else if (view === "map") {
     const next = chapter.steps[progress.step + 1];
-    add(panel, "p", next ? `下一站：${next.area}` : "已到達本章最後一步。");
+    add(panel, "p", next ? `下一步前往：${next.area}` : "已到達本章最後一步。");
     const list = add(panel, "ol", "");
     chapter.steps.forEach((step, index) => {
       const item = add(list, "li", `${step.area}｜${step.task}`, index === progress.step ? "card current" : "card");
@@ -151,7 +171,8 @@ function render() {
     });
   } else if (view === "gems" && state.build === "witch") {
     add(panel, "p", "依照任務順序領寶石。把寶石放在同一件裝備上有線相連的藍孔，輔助寶石才會生效。");
-    for (const tip of witchStarter.steps) {
+    const skillSteps = state.act === 1 ? witchStarter.steps : witchCampaign[state.act];
+    for (const tip of skillSteps) {
       const card = add(panel, "div", "", "card");
       add(card, "h3", tip.title);
       add(card, "p", tip.text);
@@ -159,7 +180,13 @@ function render() {
     const sources = add(panel, "details", "", "task-list");
     add(sources, "summary", "查看繁中寶石來源");
     const list = add(sources, "ul", "");
-    for (const [label, url] of witchStarter.sources) {
+    for (const [label, url] of [...witchStarter.sources,
+      ["烈炎風暴", "https://poedb.tw/tw/Firestorm"],
+      ["精準破壞輔助", "https://poedb.tw/tw/Controlled_Destruction_Support"],
+      ["快速施放輔助", "https://poedb.tw/tw/Faster_Casting_Support"],
+      ["火焰穿透輔助", "https://poedb.tw/tw/Fire_Penetration_Support"],
+      ["易燃", "https://poedb.tw/tw/Flammability"],
+    ]) {
       const row = add(list, "li", "");
       add(row, "a", label, "source-link").href = url;
     }
@@ -184,7 +211,7 @@ function render() {
     if (!pob.specs.length) add(panel, "p", "未讀到天賦配置。");
     pob.specs.forEach((spec, index) => add(panel, "p", `${spec.title || `天賦配置 ${index + 1}`}｜天賦樹版本：${spec.version || "未提供"}｜節點數：${spec.count || "未提供"}`, "card"));
   } else if (state.build === "witch") {
-    add(panel, "p", "女巫第一章入門目前提供寶石搭配。逐級天賦配置尚未提供。");
+    add(panel, "p", "此配置建議昇華元素使。尚未核對適用版本的逐級天賦路線，請用你選定的 PoB 檢視原始天賦配置。");
   } else {
     add(panel, "p", "此示範流派沒有已驗證的天賦配置。請匯入 PoB 查看原始天賦摘要。");
     add(panel, "p", "下一個天賦節點與昇華時機：資料未提供。");
