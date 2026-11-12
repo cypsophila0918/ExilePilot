@@ -16,3 +16,5 @@ Path of Exile 1 繁體中文劇情拓荒助手。
 ## 瀏覽器測試
 
 GitHub Actions 的 Browser QA 用 Chromium 驗證桌面與手機寬度、十章導航、進度重整還原、女巫任務提示，以及真正的 POE1 PoB XML 和其壓縮分享代碼。測試資料使用 [PoB Community Fork 的 OccVortex.xml](https://github.com/PathOfBuildingCommunity/PathOfBuilding/blob/dev/spec/TestBuilds/3.13/OccVortex.xml)；它用來檢查相容性，不是內建女巫配置。
+
+第一次遊玩可先開「新手教學」。第一章起點有開局捷徑，技能頁有補拿清單，兩場奇塔弗前可展開裝備與抗性檢查。

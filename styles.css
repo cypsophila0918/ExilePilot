@@ -24,3 +24,5 @@ progress{width:100%;height:12px;accent-color:var(--accent)}.step,.card{border:1p
 .source-link{color:var(--accent)}
 
 .task-now input[type=number]{width:7rem}
+
+#nav { flex-wrap: wrap; }

@@ -47,6 +47,9 @@ try {
   }
   await act.selectOption("1");
   await has(now, /絕望岩灘/);
+  await page.getByRole("button", { name: /第一次玩/ }).click();
+  await has(page.locator("#panel"), /第一次玩 POE1/);
+  await page.getByRole("button", { name: "回到拓荒步驟" }).click();
   await now.getByRole("checkbox").check();
   await now.getByRole("button", { name: "下一步" }).click();
   await has(now, /獅眼守望/);
@@ -66,6 +69,8 @@ try {
   await inlineLevel.press("Tab");
   await has(page.locator(".task-now"), /烈炎風暴 ＋ 精準破壞輔助 ＋ 快速施放輔助 ＋ 火焰穿透輔助/);
   await has(page.locator(".task-now"), /藍－藍－藍－紅/);
+  await page.getByText("少一顆寶石？查看補拿方式").click();
+  await has(page.locator(".task-now"), /沒拿到時先用烈炎風暴三連/);
   await page.setViewportSize({ width: 390, height: 844 });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
 
