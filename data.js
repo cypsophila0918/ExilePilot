@@ -85,7 +85,10 @@ function displayGem(gem) {
     return distinctId || (/ of |^Royale /i.test(name) ? exactName : null) || `原文：${variant === original ? original : name ? `${name}（${variant}）` : variant}`;
   }
   // 共用基本寶石 ID 的變體即使沒有 skillId，也保留原名。
-  if (name && /^(Vaal |Awakened |Royale )| of /i.test(name) && !exactName && !/Vaal|Plus|Alt[A-Z]|Royale/i.test(normalizedId || "")) return `原文：${original}`;
+  if (name && /^(Vaal |Awakened |Royale )| of /i.test(name)) {
+    const distinctId = /Vaal|Plus|Alt[A-Z]|Royale/i.test(normalizedId || "") ? gemTranslations.get(normalizedId) : null;
+    return distinctId || exactName || `原文：${original}`;
+  }
   return gemTranslations.get(normalizedId) || exactName || gemTranslations.get(original.replace(/^Metadata\/Items\/Gems\//, "")) || `原文：${original}`;
 }
 
@@ -118,7 +121,7 @@ const witchCampaign = {
   ],
   4: [{title:"完成烈炎風暴四連", text:"把火焰穿透輔助放入第四個相連紅孔。若漏拿，回第三章找卡爾麗莎或薩歐賽。力量不足先留三連，用裝備補力量。"}],
   5: [{title:"沿用四連，準備抗性裝", text:"維持烈炎風暴＋精準破壞＋快速施放＋火焰穿透（藍藍藍紅）。章末奇塔弗會扣抗性，先保留帶生命與元素抗性的裝備。"}],
-  6: [{task:"畢斯特之詩", title:"解鎖莉莉羅斯的寶石商店", text:"清完絕望岩灘後向莉莉羅斯補買普通寶石。缺烈炎風暴或其輔助可在這裡補齊，再裝回藍藍藍紅四連。"}],
+  6: [{task:"貴族殞落", title:"解鎖莉莉羅斯的寶石商店", text:"清完絕望岩灘後向莉莉羅斯補買普通寶石。缺烈炎風暴或其輔助可在這裡補齊，再裝回藍藍藍紅四連。"}],
   7: [{title:"沿用四連與位移", text:"烈炎風暴負責傷害，霜漣之瞬放獨立藍孔。遇到頭目可先施放易燃，再在頭目停住時施放烈炎風暴。"}],
   8: [{title:"沿用四連，保留走位空間", text:"對雙女神先施放易燃，放烈炎風暴後移動。換裝時確認主技能仍有藍藍藍紅四個相連插槽。"}],
   9: [{title:"沿用四連，整理抗性與生命", text:"維持主技能四連。難以承受傷害時優先換生命或抗性裝備，留意新裝備的插槽連線。"}],

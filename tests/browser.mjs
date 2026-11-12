@@ -78,6 +78,11 @@ try {
   await has(page.locator("#panel"), /節點數/);
   assert.match(await importBuild("https://example.invalid"), /目前支援/);
   assert.match(await importBuild("AAAA"), /無法解壓縮/);
+  const variantXml = '<PathOfBuilding><Build className="Witch"/><Skills><Skill><Gem gemId="Metadata/Items/Gems/SkillGemFirestorm" nameSpec="Firestorm of Meteors"/><Gem gemId="Metadata/Items/Gems/SkillGemFirestorm" nameSpec="Firestorm of Unknown"/></Skill></Skills></PathOfBuilding>';
+  assert.match(await importBuild(variantXml), /已讀取/);
+  await page.getByRole("button", { name: "技能", exact: true }).click();
+  await has(page.locator("#panel"), /烈炎風暴．隕石/);
+  await has(page.locator("#panel"), /原文：Firestorm of Unknown/);
   assert.deepEqual(errors, []);
   console.log("桌面 1280px、手機 390px、十章、進度還原、選石、真實 PoB XML 與壓縮代碼通過");
 } finally {
