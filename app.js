@@ -204,6 +204,48 @@ function renderWitchSetup(panel, chapter, progress) {
   });
 }
 
+function renderChapterMap(panel, chapter, progress) {
+  const next = chapter.steps[progress.step + 1];
+  add(panel, "p", next ? `下一步前往：${next.area}` : "已到達本章最後一步。");
+  add(panel, "p", "可先查其他區域。地形與出口方位會隨副本變動。", "muted");
+
+  const label = add(panel, "label", "查看區域");
+  const select = add(label, "select", "");
+  options(select, chapter.steps.map(({ area, task }, index) => [index, `${area}｜${task}`]), progress.step);
+
+  const card = add(panel, "div", "", "card");
+  const showArea = index => {
+    card.replaceChildren();
+    const step = chapter.steps[index];
+    const landmark = chapter.id === 1 ? firstActLandmarks[step.area] : null;
+    add(card, "h3", step.area);
+    add(card, "p", step.detail);
+    if (landmark) {
+      add(card, "h4", "相連區域");
+      add(card, "p", landmark.exits);
+      add(card, "h4", "進區後找什麼");
+      add(card, "p", landmark.hint);
+      add(card, "a", "查看區域資料", "source-link").href = landmark.source;
+    }
+  };
+  showArea(progress.step);
+  select.addEventListener("change", () => showArea(Number(select.value)));
+
+  const route = add(panel, "details", "", "task-list");
+  add(route, "summary", "查看整章路線");
+  const list = add(route, "ol", "");
+  chapter.steps.forEach((step, index) => {
+    const item = add(list, "li", "", index === progress.step ? "card current" : "card");
+    if (index === progress.step) item.setAttribute("aria-current", "step");
+    const button = add(item, "button", `${step.area}｜${step.task}`);
+    button.addEventListener("click", () => {
+      select.value = index;
+      showArea(index);
+      select.focus();
+    });
+  });
+}
+
 function render() {
   const panel = $("panel");
   panel.replaceChildren();
@@ -239,13 +281,7 @@ function render() {
   if (view === "route") {
     renderRoute(panel, chapter, progress);
   } else if (view === "map") {
-    const next = chapter.steps[progress.step + 1];
-    add(panel, "p", next ? `下一步前往：${next.area}` : "已到達本章最後一步。");
-    const list = add(panel, "ol", "");
-    chapter.steps.forEach((step, index) => {
-      const item = add(list, "li", `${step.area}｜${step.task}`, index === progress.step ? "card current" : "card");
-      if (index === progress.step) item.setAttribute("aria-current", "step");
-    });
+    renderChapterMap(panel, chapter, progress);
   } else if (view === "gems" && state.build === "witch") {
     renderWitchSetup(panel, chapter, progress);
     add(panel, "h3", `第 ${chapter.id} 章要拿什麼`);

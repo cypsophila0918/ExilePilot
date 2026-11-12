@@ -50,6 +50,12 @@ try {
   await page.getByRole("button", { name: /第一次玩/ }).click();
   await has(page.locator("#panel"), /第一次玩 POE1/);
   await page.getByRole("button", { name: "回到拓荒步驟" }).click();
+  await page.getByRole("button", { name: "地圖", exact: true }).click();
+  await page.getByLabel("查看區域").selectOption({ label: "海潮地穴｜啟用傳送點" });
+  await has(page.locator("#panel"), /相連區域/);
+  await has(page.locator("#panel"), /相對位置有不同配置/);
+  await page.getByRole("button", { name: "拓荒", exact: true }).click();
+  await has(now, /絕望岩灘/);
   await now.getByRole("checkbox").check();
   await now.getByRole("button", { name: "下一步" }).click();
   await has(now, /獅眼守望/);
