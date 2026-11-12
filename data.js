@@ -41,3 +41,40 @@ const demoBuild = {
   ],
 };
 const demoNotice = "介面示範 v0.1｜來源：ExilePilot 自製範例。POE1 適用版本未驗證。";
+
+// POE1 繁中寶石對照 v1。精確對照名稱與物品識別碼，保留不同寶石變體。
+const gemTranslations = new Map([
+  ["Fireball", "SkillGemFireball", "火球"],
+  ["Freezing Pulse", "SkillGemFreezingPulse", "冰霜脈衝"],
+  ["Arcane Surge Support", "SupportGemArcaneSurge", "秘能波動輔助"],
+  ["Frostblink", "SkillGemFrostblink", "霜漣之瞬"],
+  ["Added Lightning Damage Support", "SupportGemAddedLightningDamage", "附加閃電傷害輔助"],
+  ["Arc", "SkillGemArc", "電弧"],
+].flatMap(([english, id, chinese]) => [[english, chinese], [id, chinese]]));
+
+function displayGem(name) {
+  const original = name.trim();
+  const translated = gemTranslations.get(original.replace(/^Metadata\/Items\/Gems\//, ""));
+  if (translated) return translated;
+  return /\p{Script=Han}/u.test(original) ? original : `原文：${original}`;
+}
+
+// 女巫第一章入門建議。取得順序取決於任務，角色等級只決定能否裝上寶石。
+const witchStarter = {
+  name: "女巫第一章入門",
+  steps: [
+    { task: "大門口的敵人", title: "絕望岩灘｜火球＋秘能波動輔助", text: "先拿火球打怪，再從途中箱子拿秘能波動輔助。放進同一件裝備的兩個相連藍孔。沒有連線時，先單用火球。" },
+    { task: "領取起始技能寶石", title: "大門口的敵人｜選冰霜脈衝", text: "擊敗西拉克後找塔格拉選冰霜脈衝，換下火球，繼續連秘能波動輔助（藍—藍）。投射物可以穿過多個敵人。選過其他獎勵也可找奈莎購買。" },
+    { task: "醫者之心", title: "醫者之心｜選水銀藥劑", text: "把醫藥箱交給奈莎後選水銀藥劑，跑圖時使用。主技能繼續用冰霜脈衝。" },
+    { task: "打破鳥蛋", title: "打破鳥蛋｜選霜漣之瞬", text: "打開海潮地穴後，回獅眼守望找塔格拉選霜漣之瞬。角色達 4 級可裝進另一個藍孔並綁到技能列，用來位移。主技能維持原本的兩連。" },
+    { task: "衝出監牢", title: "衝出監牢｜選附加閃電傷害輔助", text: "打倒典獄長布魯特斯後回獅眼守望領獎。角色達 8 級且智慧至少 18，可用三個相連藍孔放冰霜脈衝、秘能波動輔助和附加閃電傷害輔助。只有兩連時，可先用冰霜脈衝連附加閃電傷害輔助。" },
+  ],
+  sources: [
+    ["火球", "https://poedb.tw/tw/Fireball"],
+    ["冰霜脈衝", "https://poedb.tw/tw/Freezing_Pulse"],
+    ["秘能波動輔助", "https://poedb.tw/tw/Arcane_Surge_Support"],
+    ["打破鳥蛋獎勵", "https://poedb.tw/tw/Breaking_Some_Eggs"],
+    ["霜漣之瞬", "https://poedb.tw/tw/Frostblink"],
+    ["附加閃電傷害輔助", "https://poedb.tw/tw/Added_Lightning_Damage_Support"],
+  ],
+};

@@ -37,13 +37,13 @@ function options(select, entries, value) {
 function syncControls() {
   options($("act"), chapters.map(({ id }) => [id, `第 ${id} 章`]), state.act);
   options($("class"), [["", "未選擇"], ...Object.entries(classes)], state.className);
-  options($("build"), [["demo", demoBuild.name], ...(state.imported ? [["pob", "匯入的 PoB 流派"]] : [])], state.build);
+  options($("build"), [["demo", demoBuild.name], ["witch", witchStarter.name], ...(state.imported ? [["pob", "匯入的 PoB 流派"]] : [])], state.build);
   $("level").value = state.level;
   syncCharacterSummary();
 }
 
 function syncCharacterSummary() {
-  const buildName = state.build === "pob" ? "PoB 流派" : "內建示範";
+  const buildName = { pob: "PoB 流派", witch: witchStarter.name, demo: "內建示範" }[state.build];
   const className = classes[state.className] || "未選職業";
   $("character-summary").textContent = `等級 ${state.level} · ${className} · ${buildName}`;
 }
@@ -60,6 +60,13 @@ function renderRoute(panel, chapter, progress) {
   add(current, "p", `目前要做 · 第 ${progress.step + 1} / ${meter.max} 步`, "muted");
   add(current, "h3", `${step.area}｜${step.task}`);
   add(current, "p", step.detail);
+  if (chapter.id === 1 && state.build === "witch") {
+    const tip = witchStarter.steps.find(item => item.task === step.task);
+    if (tip) {
+      add(current, "h3", tip.title);
+      add(current, "p", tip.text);
+    }
+  }
   add(current, "p", nextStep ? `下一站：${nextStep.area}` : "這是本章最後一步。", "muted");
 
   const mark = add(current, "label", "", "step");
@@ -126,6 +133,8 @@ function render() {
   if ((view === "route" || view === "map") && chapter.source) {
     const source = add(panel, "p", "POE1 繁中路線 v1｜來源查核 2026-11-12｜", "muted");
     add(source, "a", "流亡編年史", "source-link").href = chapter.source;
+  } else if ((view === "gems" || view === "tree") && state.build === "witch") {
+    add(panel, "p", "女巫第一章入門 v1｜POE1 繁中資料查核 2026-11-13", "notice");
   } else if (view === "route" || view === "map" || !pob) {
     add(panel, "p", demoNotice, "notice");
   } else add(panel, "p", `來源：匯入的 PoB｜目標版本：${pob.target || "未提供"}｜原始職業：${classes[pob.className] || pob.className || "未提供"}`, "notice");
@@ -140,6 +149,20 @@ function render() {
       const item = add(list, "li", `${step.area}｜${step.task}`, index === progress.step ? "card current" : "card");
       if (index === progress.step) item.setAttribute("aria-current", "step");
     });
+  } else if (view === "gems" && state.build === "witch") {
+    add(panel, "p", "依照任務順序領寶石。把寶石放在同一件裝備上有線相連的藍孔，輔助寶石才會生效。");
+    for (const tip of witchStarter.steps) {
+      const card = add(panel, "div", "", "card");
+      add(card, "h3", tip.title);
+      add(card, "p", tip.text);
+    }
+    const sources = add(panel, "details", "", "task-list");
+    add(sources, "summary", "查看繁中寶石來源");
+    const list = add(sources, "ul", "");
+    for (const [label, url] of witchStarter.sources) {
+      const row = add(list, "li", "");
+      add(row, "a", label, "source-link").href = url;
+    }
   } else if (view === "gems" && !pob) {
     const stage = demoBuild.stages.findLast(item => item.level <= state.level);
     const next = demoBuild.stages.find(item => item.level > state.level);
@@ -148,18 +171,20 @@ function render() {
     add(panel, "p", `插槽需求：${stage.sockets}。取得章節與購買條件未提供。`);
     if (next) add(panel, "p", `等級 ${next.level} 切換至${next.title}。`);
   } else if (view === "gems") {
-    add(panel, "p", "以下是 PoB 原始技能群組。若原檔使用英文，目前會顯示原名。逐級推薦、取得條件與實際插槽需求未提供。");
+    add(panel, "p", "以下是 PoB 原始技能群組。已核對的寶石顯示繁中譯名，其他標示原文。逐級推薦、取得條件與實際插槽需求未提供。");
     if (!pob.groups.length) add(panel, "p", "未讀到可顯示的寶石名稱。");
     pob.groups.forEach((group, index) => {
       const card = add(panel, "div", "", "card");
       add(card, "h3", group.title || `技能群組 ${index + 1}`);
-      add(card, "p", group.gems.join("、"));
+      add(card, "p", group.gems.map(displayGem).join("、"));
     });
   } else if (pob) {
     add(panel, "p", `昇華：${pob.ascendancy && pob.ascendancy !== "None" ? pob.ascendancy : "未提供"}`);
     add(panel, "p", "以下是原始天賦配置摘要。下一點順序與昇華時機未提供。");
     if (!pob.specs.length) add(panel, "p", "未讀到天賦配置。");
     pob.specs.forEach((spec, index) => add(panel, "p", `${spec.title || `天賦配置 ${index + 1}`}｜天賦樹版本：${spec.version || "未提供"}｜節點數：${spec.count || "未提供"}`, "card"));
+  } else if (state.build === "witch") {
+    add(panel, "p", "女巫第一章入門目前提供寶石搭配。逐級天賦配置尚未提供。");
   } else {
     add(panel, "p", "此示範流派沒有已驗證的天賦配置。請匯入 PoB 查看原始天賦摘要。");
     add(panel, "p", "下一個天賦節點與昇華時機：資料未提供。");
@@ -174,8 +199,20 @@ $("level").addEventListener("change", event => {
   save();
   render();
 });
-$("class").addEventListener("change", event => { state.className = event.target.value; syncCharacterSummary(); save(); });
-$("build").addEventListener("change", event => { state.build = event.target.value; syncCharacterSummary(); save(); render(); });
+$("class").addEventListener("change", event => {
+  state.className = event.target.value;
+  if (state.build === "witch" && state.className !== "Witch") state.build = "demo";
+  syncControls();
+  save();
+  render();
+});
+$("build").addEventListener("change", event => {
+  state.build = event.target.value;
+  if (state.build === "witch") state.className = "Witch";
+  syncControls();
+  save();
+  render();
+});
 $("nav").querySelectorAll("button").forEach(button => button.addEventListener("click", () => {
   view = button.dataset.view;
   $("nav").querySelectorAll("button").forEach(item => item.setAttribute("aria-pressed", String(item === button)));

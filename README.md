@@ -16,3 +16,7 @@ Path of Exile 1（POE1）繁體中文拓荒助手。
 - 分享代碼格式依據 [Path of Building Community Fork 匯出程式](https://github.com/PathOfBuildingCommunity/PathOfBuilding/blob/dev/src/Classes/ImportTab.lua)。匯入只在瀏覽器處理。可讀取角色欄位、技能群組和天賦配置摘要。PoB 的版本欄位依原始資料顯示。
 - 暫時無法直接抓取分享網址。缺少的寶石取得條件、逐級天賦及昇華時機會在介面提示。
 - 網站以相對路徑載入，供 GitHub Pages 靜態託管使用。
+
+## 女巫第一章入門
+
+展開「角色與流派設定」，在流派選「女巫第一章入門」。第一章導航會在對應任務顯示領取與搭配建議，「技能」會列出完整順序及來源。資料版次 v1，依 2026-11-13 查閱的繁中遊戲資料整理。此入門配置涵蓋第一章寶石，未提供逐級天賦。PoB 技能群組目前可對照六顆已核對的寶石，其他保留原名。
