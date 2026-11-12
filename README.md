@@ -1,2 +1,17 @@
 # ExilePilot
-ExilePilot - Path of Exile 1 leveling assistant. Campaign navigation, skill gems, passive tree and map guides.
+
+Path of Exile 1（POE1）繁體中文拓荒助手。
+
+## 預覽
+
+1. 下載本專案後解壓縮，將所有檔案留在同一資料夾。
+2. 使用 Windows 11 的 Edge 或 Chrome 開啟 `index.html`。網站可直接執行，無須安裝或啟動伺服器。
+3. 選擇章節、角色等級、職業和流派。在「拓荒」勾選任務及切換步驟，在「地圖」查看本章示範路線。重新整理後可繼續操作。進度綁定瀏覽器與網址或檔案位置。
+4. 在 POE1 版 Path of Building Community Fork 的匯入／匯出頁產生分享代碼。按網站右上角「匯入 PoB」並貼上代碼或原始 XML，再到「技能」或「天賦」查看。
+
+## 資料來源與限制
+
+- 拓荒路線和內建流派使用 ExilePilot 自製介面示範 v0.1。十章均提供可操作流程，遊戲區域、攻略與獎勵的實際內容和適用版本仍待驗證。
+- 分享代碼格式依據 [Path of Building Community Fork 匯出程式](https://github.com/PathOfBuildingCommunity/PathOfBuilding/blob/dev/src/Classes/ImportTab.lua)。匯入只在瀏覽器處理。可讀取角色欄位、技能群組和天賦配置摘要。PoB 的版本欄位依原始資料顯示。
+- 暫時無法直接抓取分享網址。缺少的寶石取得條件、逐級天賦及昇華時機會在介面提示。
+- 網站以相對路徑載入，供 GitHub Pages 靜態託管使用。

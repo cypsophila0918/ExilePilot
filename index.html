@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Path of Exile 1 繁體中文拓荒輔助工具">
+<title>ExilePilot｜POE1 拓荒助手</title>
+<link rel="stylesheet" href="styles.css">
+<script defer src="data.js"></script>
+<script defer src="pob.js"></script>
+<script defer src="app.js"></script>
+</head>
+<body>
+<header><div class="wrap mast"><div class="brand">Exile<span>Pilot</span><small>PATH OF EXILE 1</small></div><button id="open-import">匯入 PoB</button></div></header>
+<main class="wrap">
+<section class="hero"><h1>拓荒助手</h1><p>查看當前路線、技能寶石與天賦配置。</p></section>
+<section class="controls" aria-label="角色設定">
+<label>目前章節<select id="act"></select></label>
+<label>角色等級<input id="level" type="number" min="1" max="100" value="1" required></label>
+<label>職業<select id="class"></select></label>
+<label>流派<select id="build"></select></label>
+</section>
+<nav aria-label="主要導覽" id="nav">
+<button data-view="route" aria-pressed="true">拓荒</button><button data-view="gems" aria-pressed="false">技能</button><button data-view="tree" aria-pressed="false">天賦</button><button data-view="map" aria-pressed="false">地圖</button>
+</nav>
+<p id="save" class="muted" role="status"></p>
+<section id="panel" class="panel" aria-label="目前頁面"></section>
+</main>
+<dialog id="import-dialog" aria-labelledby="import-title">
+<form id="import-form">
+<h2 id="import-title">匯入 PoB</h2>
+<label for="code">貼上 POE1 Community Fork 產生的分享代碼，或貼上 PoB XML。</label>
+<textarea id="code" rows="6" spellcheck="false"></textarea>
+<p id="import-status" role="status"></p>
+<div class="actions"><button type="button" id="close-import">關閉</button><button class="primary" id="submit-import">讀取流派</button></div>
+</form>
+</dialog>
+</body></html>
