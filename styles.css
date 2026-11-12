@@ -22,3 +22,5 @@ progress{width:100%;height:12px;accent-color:var(--accent)}.step,.card{border:1p
 .task-now h3{margin-bottom:6px}.task-now .muted{margin:0}.task-list{margin:18px 0}.task-list summary{cursor:pointer}
 
 .source-link{color:var(--accent)}
+
+.task-now input[type=number]{width:7rem}

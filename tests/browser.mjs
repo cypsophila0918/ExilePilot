@@ -39,6 +39,7 @@ try {
   const now = page.locator(".task-now");
   const has = async (locator, pattern) => assert.match(await locator.innerText(), pattern);
   assert.equal(await act.locator("option").count(), 10);
+  assert.equal(await page.locator("#build").inputValue(), "witch");
   for (let chapter = 1; chapter <= 10; chapter += 1) {
     await act.selectOption(String(chapter));
     await has(now, /目前要做/);
@@ -58,6 +59,13 @@ try {
   await act.selectOption("3");
   await page.getByRole("button", { name: "技能", exact: true }).click();
   await has(page.locator("#panel"), /28 級換主技能/);
+  await has(page.locator(".task-now"), /冰霜脈衝/);
+  await act.selectOption("4");
+  const inlineLevel = page.locator(".task-now input");
+  await inlineLevel.fill("31");
+  await inlineLevel.press("Tab");
+  await has(page.locator(".task-now"), /烈炎風暴 ＋ 精準破壞輔助 ＋ 快速施放輔助 ＋ 火焰穿透輔助/);
+  await has(page.locator(".task-now"), /藍－藍－藍－紅/);
   await page.setViewportSize({ width: 390, height: 844 });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
 

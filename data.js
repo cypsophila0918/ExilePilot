@@ -31,13 +31,6 @@ const chapters = [actOne, ...Object.entries(campaignRoutes).map(([chapter, rows]
   source: `https://poedb.tw/tw/Act_${chapter}`,
   steps: rows.map(([area, task, detail]) => ({ area, task, detail })),
 }))];
-const demoBuild = {
-  name: "內建流派（操作示範）",
-  stages: [
-    { level: 1, title: "過渡配置", active: "示範主動寶石 A（紅）", support: "示範輔助寶石 A（紅）", sockets: "2 連，紅－紅" },
-    { level: 12, title: "切換配置", active: "示範主動寶石 B（藍）", support: "示範輔助寶石 B（綠）", sockets: "2 連，藍－綠" },
-  ],
-};
 const demoNotice = "介面示範 v0.1｜來源：ExilePilot 自製範例。POE1 適用版本未驗證。";
 
 // POE1 繁中寶石對照 v1。精確對照名稱與物品識別碼，保留不同寶石變體。
@@ -94,7 +87,7 @@ function displayGem(gem) {
 
 // 女巫第一章入門建議。取得順序取決於任務，角色等級只決定能否裝上寶石。
 const witchStarter = {
-  name: "女巫｜烈炎風暴拓荒",
+  name: "新手推薦｜烈炎風暴女巫",
   steps: [
     { task: "大門口的敵人", title: "絕望岩灘｜火球＋秘能波動輔助", text: "先拿火球打怪，再從途中箱子拿秘能波動輔助。放進同一件裝備的兩個相連藍孔。沒有連線時，先單用火球。" },
     { task: "領取起始技能寶石", title: "大門口的敵人｜選冰霜脈衝", text: "擊敗西拉克後找塔格拉選冰霜脈衝，換下火球，繼續連秘能波動輔助（藍—藍）。投射物可以穿過多個敵人。選過其他獎勵也可找奈莎購買。" },
